@@ -1,0 +1,112 @@
+        <!-- Modal -->
+        <div class="modal-backdrop" id="rule-modal" style="display:none;">
+            <div class="modal-card">
+                <h3>添加自定义列标题映射规则</h3>
+                <p>横向指定统一列名以及哪些旧表头应该自动合并到该列。</p>
+                <div class="form-group">
+                    <label>统一目标列名（例如：客户名称）</label>
+                    <input type="text" id="modal-target-input" placeholder="输入目标统一表头名称" class="input-control">
+                </div>
+                <div class="form-group">
+                    <label>归并的别名列表（英文逗号隔开，例如：姓名, 客户姓名, 名字, 买家）</label>
+                    <input type="text" id="modal-aliases-input" placeholder="多个别名请用逗号隔开" class="input-control">
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" id="modal-cancel-btn">取消</button>
+                    <button class="btn btn-primary" id="modal-save-btn">保存规则</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 可视化数据智能清洗与治理画布弹窗 -->
+        <div class="modal-backdrop" id="clean-canvas-modal" style="display:none;">
+            <div class="modal-card modal-lg">
+                <div class="modal-header-flex">
+                    <div>
+                        <h3 style="margin-bottom: 0.2rem;">🎨 可视化数据清洗与治理画布</h3>
+                        <p class="modal-sub-desc">正在配置目标列: <strong id="clean-target-name" style="color:#831843;">手机号</strong></p>
+                    </div>
+                    <button class="modal-close-icon" id="clean-modal-close-btn">&times;</button>
+                </div>
+
+                <div class="clean-canvas-grid">
+                    <!-- 左侧：治理选项控制面板 -->
+                    <div class="clean-options-panel">
+                        <!-- 1. 数据脱敏规则 -->
+                        <div class="clean-option-group">
+                            <label class="clean-option-label">🔒 敏感数据脱敏规则 (Data Masking)</label>
+                            <select id="clean-mask-select" class="input-control">
+                                <option value="none">不脱敏 (保留明文)</option>
+                                <option value="phone_3_4">📱 手机号脱敏 (前3后4，中间****，例: 138****5678)</option>
+                                <option value="email">📧 邮箱掩码 (例: u***r@domain.com)</option>
+                                <option value="idcard">🪪 身份证隐藏生日 (例: 110101******1234)</option>
+                                <option value="name">👤 姓名脱敏 (例: 张*三 / 李*)</option>
+                                <option value="full_star">✳️ 全部字符替换为星号 (****)</option>
+                            </select>
+                        </div>
+
+                        <!-- 2. 日期格式规范化 -->
+                        <div class="clean-option-group">
+                            <label class="clean-option-label">📅 日期统一规范化 (Date Standardizer)</label>
+                            <select id="clean-date-select" class="input-control">
+                                <option value="none">不转换 (保持原始输入)</option>
+                                <option value="YYYY-MM-DD">2026-09-07 (标准 YYYY-MM-DD)</option>
+                                <option value="YYYY/MM/DD">2026/09/07 (斜杠 YYYY/MM/DD)</option>
+                                <option value="YYYY年MM月DD日">2026年09月07日 (中文年月)</option>
+                                <option value="YYYY-MM-DD HH:mm:ss">2026-09-07 18:00:00 (带具体时间)</option>
+                                <option value="YYYYMMDD">20260907 (紧凑纯数字)</option>
+                            </select>
+                        </div>
+
+                        <!-- 3. 文本修剪与转换 -->
+                        <div class="clean-option-group">
+                            <label class="clean-option-label">✂️ 文本修剪与格式规范</label>
+                            <div class="checkbox-group-vertical">
+                                <label class="checkbox-label-inline">
+                                    <input type="checkbox" id="clean-trim-cb" checked>
+                                    <span>自动去除首尾不可见空格 (Trim)</span>
+                                </label>
+                                <label class="checkbox-label-inline">
+                                    <input type="checkbox" id="clean-linebreaks-cb">
+                                    <span>消除文本内强行换行符 (Linebreaks)</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- 4. 空值填充与大小写 -->
+                        <div class="clean-option-grid-2">
+                            <div class="clean-option-group">
+                                <label class="clean-option-label">🔤 字母大小写转换</label>
+                                <select id="clean-case-select" class="input-control">
+                                    <option value="none">不转换</option>
+                                    <option value="upper">全部大写 (UPPERCASE)</option>
+                                    <option value="lower">全部小写 (lowercase)</option>
+                                </select>
+                            </div>
+                            <div class="clean-option-group">
+                                <label class="clean-option-label">🩹 缺失空值默认填充</label>
+                                <input type="text" id="clean-fill-empty-input" placeholder="留空则保持为空 (如: N/A, 0, 无)" class="input-control">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 右侧：实时 Before/After 极速对比画布 -->
+                    <div class="clean-preview-panel">
+                        <div class="preview-panel-header">
+                            ⚡ 实时清洗效果极速对比 (Live Preview)
+                        </div>
+                        <div class="sample-contrast-container" id="sample-contrast-container">
+                            <div class="empty-rules-tip">加载样本中...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-actions flex-between">
+                    <button class="btn btn-secondary btn-sm" id="clean-clear-rule-btn">🗑️ 清除此列清洗规则</button>
+                    <div class="btn-group-sm">
+                        <button class="btn btn-secondary" id="clean-cancel-btn">取消</button>
+                        <button class="btn btn-success" id="clean-save-rule-btn">✨ 保存并应用此清洗规则</button>
+                    </div>
+                </div>
+            </div>
+        </div>

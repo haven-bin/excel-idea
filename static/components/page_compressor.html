@@ -1,0 +1,76 @@
+        <!-- 页面五：智能图片高效压缩工具页 -->
+        <main class="page-view" id="page-compressor">
+            <div class="tool-page-header">
+                <button class="btn btn-secondary btn-sm" id="compressor-back-home-btn">⬅ 返回工具导航大厅</button>
+                <span class="tool-page-title">🖼️ 智能图片高效压缩工具</span>
+            </div>
+
+            <div class="card glass-card">
+                <!-- Segmented Control for Mode Selection -->
+                <div class="converter-mode-tabs">
+                    <button class="mode-tab active" id="tab-mode-high-compress" data-mode="high_compress">
+                        <span class="tab-icon">⚡</span>
+                        <div class="tab-info">
+                            <strong>⚡ 高压缩模式 (极限压缩)</strong>
+                            <small>压缩至 几十 ~ 几百 KB，适合网页上传、表单附件与极速传输</small>
+                        </div>
+                    </button>
+                    <button class="mode-tab" id="tab-mode-high-quality" data-mode="high_quality">
+                        <span class="tab-icon">🎨</span>
+                        <div class="tab-info">
+                            <strong>🎨 高质量模式 (画质优先)</strong>
+                            <small>3~4 MB 大图智能瘦身至 ~1 MB，兼顾高清晰细节与体积优化</small>
+                        </div>
+                    </button>
+                </div>
+
+                <div class="drop-zone" id="compressor-drop-zone" style="margin-top: 1.5rem;">
+                    <div class="drop-icon">🖼️</div>
+                    <h3>拖拽图片文件到此处，或 <span class="browse-btn" id="compressor-browse-btn">点击浏览选择图片</span></h3>
+                    <p>支持选择 JPG, JPEG, PNG, WEBP 等常见格式，可一次性选择多张图片批量压缩</p>
+                    <input type="file" id="compressor-file-input" multiple accept="image/jpeg, image/png, image/webp, image/bmp" style="display:none;">
+                </div>
+
+                <div class="files-summary-bar" id="compressor-files-summary" style="display:none; margin-top: 1.5rem;">
+                    <div class="summary-info">已选中 <strong id="compressor-file-count">0</strong> 张图片</div>
+                    <button class="btn btn-secondary btn-sm" id="compressor-clear-files-btn">清空选定图片</button>
+                </div>
+
+                <div class="files-grid" id="compressor-files-grid"></div>
+
+                <!-- 压缩进度条 -->
+                <div class="progress-bar-wrapper" id="compressor-progress-wrapper" style="display:none; margin-top: 1.5rem;">
+                    <div class="progress-info">
+                        <span id="compressor-progress-text">⏳ 正在读取与压缩图片...</span>
+                        <span id="compressor-progress-percent">0%</span>
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-bar-fill" id="compressor-progress-fill" style="width: 0%;"></div>
+                    </div>
+                </div>
+
+                <!-- 压缩效果统计数据面板 -->
+                <div class="stats-cards-row" id="compressor-stats-row" style="display:none; margin-top: 1.5rem;">
+                    <div class="stat-card">
+                        <div class="stat-num" id="stat-orig-size">0 MB</div>
+                        <div class="stat-label">压缩前原总体积</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-num" id="stat-compressed-size" style="color: #047857;">0 KB</div>
+                        <div class="stat-label">压缩后总体积</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-num" id="stat-saved-percent" style="color: #EC4899;">0%</div>
+                        <div class="stat-label">空间优化率</div>
+                    </div>
+                </div>
+
+                <div class="panel-actions flex-between" style="margin-top: 2rem;">
+                    <button class="btn btn-secondary" id="compressor-reset-btn">🔄 清空重新上传</button>
+                    <div class="btn-group-sm">
+                        <button class="btn btn-primary btn-lg" id="compressor-execute-btn" disabled>🚀 开始执行智能图片压缩 ➔</button>
+                        <button class="btn btn-success btn-lg" id="compressor-download-btn" style="display:none;">📥 点击下载压缩后的图片 ➔</button>
+                    </div>
+                </div>
+            </div>
+        </main>

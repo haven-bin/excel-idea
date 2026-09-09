@@ -1,0 +1,9 @@
+version: '3.8'
+
+services:
+  excel-merger:
+    build: .
+    container_name: smart-excel-merger
+    ports:
+      - "8000:8000"
+    restart: always

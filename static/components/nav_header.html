@@ -1,0 +1,47 @@
+    <!-- 全局顶部导航栏 -->
+    <header class="platform-navbar">
+        <div class="navbar-container">
+            <div class="brand-logo" id="nav-brand-logo">
+                <span class="brand-icon">📊</span>
+                <span class="brand-name">Excel Matrix Pro</span>
+                <span class="platform-badge">Toolkit Hub</span>
+            </div>
+            <nav class="nav-links">
+                <button class="nav-btn active" id="nav-btn-home">🏠 首页大厅</button>
+                
+                <!-- 核心工具下拉菜单 (默认 inline style="display:none;" 物理绝对隐藏) -->
+                <div class="nav-dropdown" id="nav-tools-dropdown">
+                    <button class="nav-btn dropdown-toggle" id="nav-btn-tools" type="button">
+                        🧰 核心工具箱 <span class="dropdown-arrow">▾</span>
+                    </button>
+                    <div class="dropdown-menu" id="nav-tools-menu" style="display: none !important; flex-direction: column;">
+                        <div class="dropdown-item" id="nav-item-converter">
+                            <span class="item-icon">📄</span>
+                            <span class="item-title">PDF / Word 双向互转</span>
+                        </div>
+                        <div class="dropdown-item" id="nav-item-merger">
+                            <span class="item-icon">📁</span>
+                            <span class="item-title">多表智能合并</span>
+                        </div>
+                        <div class="dropdown-item" id="nav-item-cleaner">
+                            <span class="item-icon">✨</span>
+                            <span class="item-title">数据格式化与清洗</span>
+                        </div>
+                        <div class="dropdown-item" id="nav-item-compressor">
+                            <span class="item-icon">🖼️</span>
+                            <span class="item-title">智能图片压缩</span>
+                        </div>
+                        <div class="dropdown-item" id="nav-item-splitter">
+                            <span class="item-icon">📊</span>
+                            <span class="item-title">报表按列拆分</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="nav-btn" id="nav-btn-templates">📋 方案模板中心</button>
+            </nav>
+        </div>
+    </header>
+
+
+

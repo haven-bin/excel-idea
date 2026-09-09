@@ -1,0 +1,80 @@
+        <!-- 页面三：独立数据格式化与批量规范清洗工具页 -->
+        <main class="page-view" id="page-cleaner">
+            <div class="tool-page-header">
+                <button class="btn btn-secondary btn-sm" id="cleaner-back-home-btn">⬅ 返回工具导航大厅</button>
+                <span class="tool-page-title">✨ 数据格式化与批量规范清洗工具</span>
+            </div>
+
+            <div class="card glass-card">
+                <!-- Segmented Control for Mode Selection (与 Converter / Compressor 格式保持完全一致) -->
+                <div class="converter-mode-tabs">
+                    <button class="mode-tab active" id="tab-clean-auto" data-clean-mode="auto">
+                        <span class="tab-icon">⚡</span>
+                        <div class="tab-info">
+                            <strong>⚡ 极速全自动智能清洗 (推荐)</strong>
+                            <small>自动识别手机号脱敏、日期规范化 (YYYY-MM-DD)、剔除前后空格与文本换行</small>
+                        </div>
+                    </button>
+                    <button class="mode-tab" id="tab-clean-custom" data-clean-mode="custom">
+                        <span class="tab-icon">⚙️</span>
+                        <div class="tab-info">
+                            <strong>⚙️ 高级自定义配置模式 (展开字段微调)</strong>
+                            <small>展开各列属性卡片，独立调整手机/邮箱/身份证脱敏规则与实时效果对比</small>
+                        </div>
+                    </button>
+                </div>
+
+                <div class="drop-zone" id="cleaner-drop-zone" style="margin-top: 1.5rem;">
+                    <div class="drop-icon">🧹</div>
+                    <h3>拖拽 Excel 表格文件到此处，或 <span class="browse-btn" id="cleaner-browse-btn">点击浏览选择文件</span></h3>
+                    <p>支持选择单个或多个 Excel (.xlsx, .xls) 表格文件进行批量规范清洗与格式化</p>
+                    <input type="file" id="cleaner-file-input" multiple accept=".xlsx, .xls" style="display:none;">
+                </div>
+
+                <div class="files-summary-bar" id="cleaner-files-summary" style="display:none; margin-top: 1.5rem;">
+                    <div class="summary-info">已选中 <strong id="cleaner-file-count">0</strong> 个待清洗表格文件</div>
+                    <button class="btn btn-secondary btn-sm" id="cleaner-clear-files-btn">清空选定文件</button>
+                </div>
+
+                <div class="files-grid" id="cleaner-files-grid"></div>
+
+                <!-- 可折叠的字段规则墙工作区 (默认收起，点击展开) -->
+                <div id="cleaner-workspace" style="display:none; margin-top: 1.5rem;">
+                    <div class="card-header-main" style="margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                        <div>
+                            <h3>全字段规范清洗墙与实时效果对比</h3>
+                            <p class="card-desc">🤖 <b>已自动识别推荐最佳清洗规则！</b>点击右侧按钮可自由收起或展开详细规则卡片：</p>
+                        </div>
+                        <div class="btn-group-sm">
+                            <button class="btn btn-secondary btn-sm" id="cleaner-toggle-wall-btn">📁 展开字段微调墙 ▾</button>
+                            <button class="btn btn-secondary btn-sm" id="cleaner-ai-recommend-btn">🪄 恢复 AI 推荐规则</button>
+                            <span class="badge badge-pink" id="cleaner-cols-count-badge">共 0 个字段</span>
+                        </div>
+                    </div>
+
+                    <!-- 独立全列卡片墙 (默认 display:none 收起) -->
+                    <div id="cleaner-cards-wall" class="cleaner-cards-wall" style="display:none;"></div>
+                </div>
+
+                <!-- 转换/清洗进度条 -->
+                <div class="progress-bar-wrapper" id="cleaner-progress-wrapper" style="display:none; margin-top: 1.5rem;">
+                    <div class="progress-info">
+                        <span id="cleaner-progress-text">⏳ 正在规范清洗与格式化 Excel...</span>
+                        <span id="cleaner-progress-percent">0%</span>
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-bar-fill" id="cleaner-progress-fill" style="width: 0%;"></div>
+                    </div>
+                </div>
+
+                <div class="panel-actions flex-between" style="margin-top: 2rem;">
+                    <button class="btn btn-secondary" id="cleaner-reset-btn">🔄 清空重新上传</button>
+                    <div class="btn-group-sm">
+                        <button class="btn btn-primary btn-lg" id="cleaner-execute-btn" disabled>🚀 开始数据规范清洗与格式化 ➔</button>
+                        <button class="btn btn-success btn-lg" id="cleaner-download-btn" style="display:none;">📥 点击下载清洗后的 Excel ➔</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+

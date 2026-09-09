@@ -1,0 +1,60 @@
+        <!-- 页面四：PDF 转 Word & Word 转 PDF 双向互转工具页 -->
+        <main class="page-view" id="page-converter">
+            <div class="tool-page-header">
+                <button class="btn btn-secondary btn-sm" id="converter-back-home-btn">⬅ 返回工具导航大厅</button>
+                <span class="tool-page-title">📄 PDF ➔ Word & Word ➔ PDF 双向智能互转工具</span>
+            </div>
+
+            <div class="card glass-card">
+                <!-- Segmented Control for Mode Selection -->
+                <div class="converter-mode-tabs">
+                    <button class="mode-tab active" id="tab-mode-pdf-to-word" data-mode="pdf_to_word">
+                        <span class="tab-icon">📄 ➔ 📝</span>
+                        <div class="tab-info">
+                            <strong>PDF 转换为 Word (.docx)</strong>
+                            <small>将不可编辑的 PDF 文件高保真提取转换为 Word 文档</small>
+                        </div>
+                    </button>
+                    <button class="mode-tab" id="tab-mode-word-to-pdf" data-mode="word_to_pdf">
+                        <span class="tab-icon">📝 ➔ 📄</span>
+                        <div class="tab-info">
+                            <strong>Word (.docx) 打包导出为 PDF</strong>
+                            <small>将 Word 文档秒级转换为排版规范的标准 PDF</small>
+                        </div>
+                    </button>
+                </div>
+
+                <div class="drop-zone" id="converter-drop-zone" style="margin-top: 1.5rem;">
+                    <div class="drop-icon" id="converter-drop-icon">📄</div>
+                    <h3 id="converter-drop-title">拖拽 PDF 文件到此处，或 <span class="browse-btn" id="converter-browse-btn">点击浏览选择文件</span></h3>
+                    <p id="converter-drop-desc">支持选择单个或多个 PDF (.pdf) 文件进行批量转换</p>
+                    <input type="file" id="converter-file-input" multiple accept=".pdf" style="display:none;">
+                </div>
+
+                <div class="files-summary-bar" id="converter-files-summary" style="display:none; margin-top: 1.5rem;">
+                    <div class="summary-info">已选中 <strong id="converter-file-count">0</strong> 个待转换文件</div>
+                    <button class="btn btn-secondary btn-sm" id="converter-clear-files-btn">清空选定文件</button>
+                </div>
+
+                <div class="files-grid" id="converter-files-grid"></div>
+
+                <!-- 转换进度条 -->
+                <div class="progress-bar-wrapper" id="converter-progress-wrapper" style="display:none; margin-top: 1.5rem;">
+                    <div class="progress-info">
+                        <span id="converter-progress-text">⏳ 正在读取与转换中...</span>
+                        <span id="converter-progress-percent">0%</span>
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-bar-fill" id="converter-progress-fill" style="width: 0%;"></div>
+                    </div>
+                </div>
+
+                <div class="panel-actions flex-between" style="margin-top: 2rem;">
+                    <button class="btn btn-secondary" id="converter-reset-btn">🔄 清空重新上传</button>
+                    <div class="btn-group-sm">
+                        <button class="btn btn-primary btn-lg" id="converter-execute-btn" disabled>🚀 开始双向智能转换 ➔</button>
+                        <button class="btn btn-success btn-lg" id="converter-download-btn" style="display:none;">📥 点击下载转换后的文件 ➔</button>
+                    </div>
+                </div>
+            </div>
+        </main>
