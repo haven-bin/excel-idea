@@ -373,6 +373,11 @@ document.addEventListener('DOMContentLoaded', () => {
         cardToolMerger.addEventListener('click', () => switchPageView('merger'));
     }
 
+    const cardToolConverter = document.getElementById('card-tool-converter');
+    if (cardToolConverter) {
+        cardToolConverter.addEventListener('click', () => switchPageView('converter'));
+    }
+
     const cardToolCompressor = document.getElementById('card-tool-compressor');
     if (cardToolCompressor) cardToolCompressor.addEventListener('click', () => switchPageView('compressor'));
 
