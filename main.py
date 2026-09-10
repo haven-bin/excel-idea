@@ -203,6 +203,8 @@ async def compress_images_api(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+from urllib.parse import quote
+
 @app.get("/api/download/{download_id}")
 async def download_merged_file(download_id: str):
     file_info = TEMP_DOWNLOADS.get(download_id) or PDF_TEMP_DOWNLOADS.get(download_id) or IMAGE_TEMP_DOWNLOADS.get(download_id)
@@ -211,12 +213,13 @@ async def download_merged_file(download_id: str):
 
     filename = file_info['filename']
     content = file_info.get('content') or file_info.get('data')
+    encoded_filename = quote(filename)
 
     return Response(
         content=content,
         media_type="application/octet-stream",
         headers={
-            "Content-Disposition": f"attachment; filename*=UTF-8''{filename}"
+            "Content-Disposition": f"attachment; filename=\"{encoded_filename}\"; filename*=UTF-8''{encoded_filename}"
         }
     )
 
