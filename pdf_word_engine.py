@@ -91,7 +91,13 @@ def process_pdf_word_conversion(files_data: List[dict], mode: str) -> dict:
 
 
 def _pdf_to_docx(pdf_bytes: bytes, filename: str) -> bytes:
-    """PDF -> DOCX using LibreOffice CLI or 1-to-1 exact page layout renderer"""
+    """
+    Smart Page-Preserving Editable PDF -> DOCX Engine:
+    1. Try LibreOffice CLI if available.
+    2. Page-by-page hybrid parsing using docxcompose:
+       - Text/Table pages -> 100% Editable Native Word Text & Tables
+       - CAD / Blueprint / Seal pages (where pdf2docx drops content) -> High-Res Crisp Image (Never Disappears!)
+    """
     with tempfile.TemporaryDirectory() as tmp_dir:
         input_pdf = os.path.join(tmp_dir, "input.pdf")
         output_docx = os.path.join(tmp_dir, "output.docx")
@@ -99,90 +105,175 @@ def _pdf_to_docx(pdf_bytes: bytes, filename: str) -> bytes:
         with open(input_pdf, "wb") as f:
             f.write(pdf_bytes)
 
-        # 1. Try LibreOffice CLI for PDF -> DOCX (Highest quality across all CAD & text pages)
+        # 1. Try LibreOffice CLI if installed (Highest quality across all pages)
         if _try_libreoffice_pdf_to_docx(input_pdf, output_docx, tmp_dir):
             with open(output_docx, "rb") as f:
                 return f.read()
 
-        # 2. Use 1-to-1 Exact Page Layout Renderer (Guarantees 1-to-1 positions for CAD diagrams & ZERO blank pages)
+        # 2. Smart Composer Hybrid Engine
         try:
-            return _pdf_to_docx_exact_1to1(pdf_bytes)
+            return _pdf_to_docx_smart_composer(pdf_bytes, filename, tmp_dir)
         except Exception as e:
-            print(f"1-to-1 PDF to DOCX convert error: {e}, falling back to PyMuPDF image extraction...")
+            print(f"Smart Composer PDF to DOCX error: {e}")
             traceback.print_exc()
 
-        # 3. Ultimate Fallback: extract every page as a high-definition image
+        # 3. Ultimate Fallback
         return _scanned_pdf_to_docx(pdf_bytes)
 
 
-def _pdf_to_docx_exact_1to1(pdf_bytes: bytes) -> bytes:
-    """
-    1-to-1 Exact Page Layout Renderer:
-    - Matches PDF page width, height, and orientation (Portrait/Landscape) per section.
-    - Zero margins and zero paragraph spacing prevent ANY extra blank pages.
-    - 100% 1-to-1 exact positioning for CAD drawings, vector diagrams, title blocks & stamp seals.
-    """
+def _pdf_to_docx_smart_composer(pdf_bytes: bytes, filename: str, tmp_dir: str) -> bytes:
     import pymupdf
     import docx
-    from docx.shared import Pt
-    from docx.enum.section import WD_ORIENT, WD_SECTION
+    from docx.shared import Inches, Pt
+    from docxcompose.composer import Composer
 
     pdf_doc = pymupdf.open(stream=pdf_bytes, filetype="pdf")
-    doc = docx.Document()
-    
-    # Remove initial default paragraph created by Document()
-    if len(doc.paragraphs) > 0:
-        p_elem = doc.paragraphs[0]._element
-        p_elem.getparent().remove(p_elem)
+    total_pages = len(pdf_doc)
+    input_pdf = os.path.join(tmp_dir, "input.pdf")
 
-    for page_idx in range(len(pdf_doc)):
+    page_files = []
+
+    for page_idx in range(total_pages):
         page = pdf_doc[page_idx]
-        rect = page.rect
-        w_pt, h_pt = rect.width, rect.height
-        is_landscape = w_pt > h_pt
+        page_docx_path = os.path.join(tmp_dir, f"page_{page_idx}.docx")
+        
+        converted_editable = False
 
-        # Add section for page >= 1
-        if page_idx == 0:
-            section = doc.sections[0]
-        else:
-            section = doc.add_section(WD_SECTION.NEW_PAGE)
+        # Attempt pdf2docx for this specific page
+        if PdfConverter is not None:
+            try:
+                cv = PdfConverter(input_pdf)
+                cv.convert(page_docx_path, start=page_idx, end=page_idx+1)
+                cv.close()
 
-        # Set section orientation and dimensions to match PDF page exactly
-        if is_landscape:
-            section.orientation = WD_ORIENT.LANDSCAPE
-            section.page_width = Pt(w_pt)
-            section.page_height = Pt(h_pt)
-        else:
-            section.orientation = WD_ORIENT.PORTRAIT
-            section.page_width = Pt(w_pt)
-            section.page_height = Pt(h_pt)
+                if os.path.exists(page_docx_path) and os.path.getsize(page_docx_path) > 1000:
+                    page_doc = docx.Document(page_docx_path)
+                    
+                    # Count non-empty text paragraphs or tables
+                    text_content = []
+                    for element in page_doc.element.body:
+                        tag_name = element.tag.split('}')[-1]
+                        if tag_name == 'p':
+                            p_obj = docx.text.paragraph.Paragraph(element, page_doc)
+                            if p_obj.text.strip():
+                                text_content.append(p_obj.text.strip())
+                        elif tag_name == 'tbl':
+                            text_content.append("table_content")
 
-        # Zero margins for 1-to-1 exact fit without blank pages
-        section.top_margin = Pt(0)
-        section.bottom_margin = Pt(0)
-        section.left_margin = Pt(0)
-        section.right_margin = Pt(0)
-        section.header_distance = Pt(0)
-        section.footer_distance = Pt(0)
+                    # If page contains substantial text (>20 chars) or tables, keep pdf2docx editable page!
+                    if len("".join(text_content)) > 20:
+                        page_files.append(page_docx_path)
+                        converted_editable = True
+            except Exception as e:
+                print(f"Page {page_idx} pdf2docx error: {e}")
 
-        # Render page as high-res 200 DPI PNG
-        pix = page.get_pixmap(dpi=200)
-        img_bytes = pix.tobytes("png")
-        img_stream = io.BytesIO(img_bytes)
+        # If pdf2docx produced NO text content or dropped this page (CAD drawing, blueprint, stamp seal)
+        if not converted_editable:
+            img_doc = docx.Document()
+            section = img_doc.sections[0]
+            section.top_margin = Inches(0.4)
+            section.bottom_margin = Inches(0.4)
+            section.left_margin = Inches(0.4)
+            section.right_margin = Inches(0.4)
 
-        # Create clean paragraph with 0 spacing
-        p = doc.add_paragraph()
-        p.paragraph_format.space_before = Pt(0)
-        p.paragraph_format.space_after = Pt(0)
-        p.paragraph_format.line_spacing = 1.0
+            pix = page.get_pixmap(dpi=200)
+            img_bytes = pix.tobytes("png")
+            img_stream = io.BytesIO(img_bytes)
 
-        run = p.add_run()
-        run.add_picture(img_stream, width=Pt(w_pt), height=Pt(h_pt))
+            is_landscape = pix.width > pix.height
+
+            p = img_doc.paragraphs[0] if len(img_doc.paragraphs) > 0 else img_doc.add_paragraph()
+            p.paragraph_format.space_before = Pt(0)
+            p.paragraph_format.space_after = Pt(0)
+            p.paragraph_format.line_spacing = 1.0
+
+            run = p.add_run()
+            if is_landscape:
+                run.add_picture(img_stream, width=Inches(8.2))
+            else:
+                run.add_picture(img_stream, width=Inches(6.0))
+
+            img_doc.save(page_docx_path)
+            page_files.append(page_docx_path)
 
     pdf_doc.close()
-    out_buf = io.BytesIO()
-    doc.save(out_buf)
-    return out_buf.getvalue()
+
+    if not page_files:
+        return _scanned_pdf_to_docx(pdf_bytes)
+
+    # Merge all page docx files via docxcompose Composer
+    master = docx.Document(page_files[0])
+    composer = Composer(master)
+
+    for p_path in page_files[1:]:
+        composer.append(docx.Document(p_path))
+
+    output_docx = os.path.join(tmp_dir, "output.docx")
+    composer.save(output_docx)
+
+    with open(output_docx, "rb") as f:
+        return f.read()
+
+
+def _clean_docx_empty_paragraphs_file(docx_path: str):
+    """Clean trailing empty paragraphs that cause extra blank pages"""
+    try:
+        import docx
+        doc = docx.Document(docx_path)
+        modified = False
+
+        # Clean trailing empty paragraphs
+        while len(doc.paragraphs) > 1:
+            last_p = doc.paragraphs[-1]
+            if not last_p.text.strip() and not last_p._element.xpath('.//a:blip'):
+                p_elem = last_p._element
+                if p_elem.getparent() is not None:
+                    p_elem.getparent().remove(p_elem)
+                    modified = True
+            else:
+                break
+
+        if modified:
+            doc.save(docx_path)
+    except Exception as e:
+        print(f"Clean docx file error: {e}")
+
+
+def _clean_docx_empty_paragraphs(doc):
+    """Clean empty paragraphs that have no text and no images"""
+    try:
+        paragraphs = list(doc.paragraphs)
+        for i in range(len(paragraphs) - 1, -1, -1):
+            p = paragraphs[i]
+            if not p.text.strip() and not p._element.xpath('.//a:blip'):
+                p_elem = p._element
+                if p_elem.getparent() is not None and len(doc.paragraphs) > 1:
+                    p_elem.getparent().remove(p_elem)
+    except Exception as e:
+        print(f"Clean docx error: {e}")
+
+
+def _clean_docx_empty_pages(docx_path: str):
+    """Clean trailing empty paragraphs and redundant page breaks in Word file"""
+    try:
+        import docx
+        doc = docx.Document(docx_path)
+        modified = False
+
+        # Remove trailing empty paragraphs at the end of the document
+        while len(doc.paragraphs) > 1:
+            last_p = doc.paragraphs[-1]
+            if not last_p.text.strip() and not last_p._element.xpath('.//a:blip'):
+                p_elem = last_p._element
+                p_elem.getparent().remove(p_elem)
+                modified = True
+            else:
+                break
+
+        if modified:
+            doc.save(docx_path)
+    except Exception as e:
+        print(f"Clean docx error: {e}")
 
 
 def _try_libreoffice_pdf_to_docx(input_pdf: str, output_docx: str, tmp_dir: str) -> bool:

@@ -4,3 +4,7 @@ python-multipart>=0.0.9
 pandas>=2.0.0
 openpyxl>=3.1.0
 xlrd>=2.0.1
+pdf2docx>=0.5.6
+docxcompose>=2.2.0
+pymupdf>=1.23.0
+python-docx>=1.0.0
